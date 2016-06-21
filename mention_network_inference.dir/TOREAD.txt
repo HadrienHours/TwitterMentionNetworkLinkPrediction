@@ -1,0 +1,4 @@
+First extracting mentions from tweets as UID,MID,DATE
+Then convert into UID,MID,DATE,DIR with DIR=0 if tweet from UID with @MID, DIR=1 if tweet from MID with @UID, adding the constraint UID<MID
+Sort the mention chronologically with format DATE,UID,MID,DIRECTION
+Then build the mention graph from the stream of previously formatted file
