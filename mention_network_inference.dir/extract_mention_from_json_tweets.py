@@ -62,13 +62,12 @@ def main():
         type=argparse.FileType("w"),
         default=sys.stdout,
         help="mms output")
-    parser.add_argument("-v","--verbose",
-            type=int,
-            default=0,
-            help="verbose level: None (0), Quiet (1), Verbosy (2)")
     args = parser.parse_args()
-    global verbose
-    verbose = args.verbose
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+
     ids_dumped = parserperuser(args.input,args.output)
     args.input.close()
     args.output.close()
