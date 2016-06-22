@@ -5,32 +5,9 @@ import argparse
 import json
 import datetime
 import re
+import time
 verbose=0
-pversion=2
 
-def printtweetinfos(input, output):
-    flagline=0
-    maxC=10
-    counter=0
-    for line in input:
-        tweet = json.loads(line)
-        if 'mention_ids' in tweet['twitter'].keys():
-            counter+=1
-            print('\n\n')
-            if flagline == 1:
-                print("##########################")
-                print("####      LINE        ####")
-                print("##########################")
-                print(line)
-            print("##########################")
-            print("####      TWEET       ####")
-            print("##########################")
- #           print(tweet['twitter'])
-            print("tweet['twitter']['user']['id'] :",tweet['twitter']['user']['id'])
-            print("tweet['twitter']['created_at'] :",tweet['twitter']['created_at'])
-            print("tweet['twitter']['mention_ids'] :",tweet['twitter']['mention_ids'])
-            if counter >= maxC:
-                return 0
 
 def parserperuser(fileinput,fileoutput):
     counter=0
@@ -49,10 +26,17 @@ def parserperuser(fileinput,fileoutput):
             try:
                 uid = tweet['twitter']['user']['id']
                 d = [int(s) for s in re.findall(r'[0-9]+',tweet['twitter']['created_at'])] #Get only numbers
-                da = str(datetime.datetime(*d[0:6])) #convert date format
+                da = datetime.datetime(*d[0:6]) #convert date format
+                if sys.version_info.major == 3:
+                    dt = da.timestamp()
+                elif sys.version_info.major == 2:
+                    #dt.strftime('%s')
+                    dt = time.mktime(da.timetuple())
                 for m in tweet['twitter']['mention_ids']:
-                        json.dump({'user_id':uid,'mention_id':m,'date':da},fileoutput)
-                        fileoutput.write('\n')
+                        if uid > mid:
+                            fileoutput.write(str(mid)+','+st(uid)+','+str(1)+','+str(dt)+'\n')
+                        else:
+                            fileoutput.write(str(uid)+','+st(mid)+','+str(0)+','+str(dt)+'\n')
                         counter+=1
                 if counter%10000 == 0:
                     print(counter,' lines added')
@@ -85,8 +69,6 @@ def main():
     args = parser.parse_args()
     global verbose
     verbose = args.verbose
-    global pversion
-    pversion=sys.version.split('.')[0]
     ids_dumped = parserperuser(args.input,args.output)
     args.input.close()
     args.output.close()
