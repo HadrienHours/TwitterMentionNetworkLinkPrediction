@@ -1,8 +1,7 @@
 import sys,os,re,argparse
 
-full_mention = 1
 
-def getMentionList(filein,fileout):
+def getMentionList(filein,fileout,full_mention):
     uid = 0
     mid = 0
     umention_f = 0
@@ -30,7 +29,7 @@ def getMentionList(filein,fileout):
             u_nmentions = 1
         else:
             if uid_c != uid or mid_c != mid:
-                if ((u_nmentions * m_nmentions) > 0) or (full_mention > 0):
+                if ((u_nmentions * m_nmentions) > 0) or (full_mention):
                     if curdir == 0:
                         fileout.write(str(uid)+','+str(mid)+','+str(umention_f)+','+str(umention_l)+','+str(mmention_f)+','+str(mmention_l)+','+str(u_nmentions)+','+str(m_nmentions))
                         fileout.write('\n')
@@ -71,7 +70,7 @@ def getMentionList(filein,fileout):
             fileout.write('\n')
         else:
             fileout.write(str(mid)+','+str(uid)+','+str(umention_f)+','+str(umention_l)+','+str(mmention_f)+','+str(mmention_l)+','+str(u_nmentions)+','+str(m_nmentions))
-                        fileout.write('\n')
+            fileout.write('\n')
 
 
 
@@ -85,11 +84,15 @@ def main():
             type=argparse.FileType("w"),
             default=sys.stdout,
             help="Output file")
+    parser.add_argument('--fullMentions',dest='full_mentions',action='store_true')
+    parser.add_argument('--reciprocalMentions',dest='full_mentions',action='store_false')
+    parser.set_defaults(full_mentions=True)
+
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
     args = parser.parse_args()
-    getMentionList(args.input,args.output)
+    getMentionList(args.input,args.output,args.full_mentions)
     args.input.close()
     args.output.close()
 
