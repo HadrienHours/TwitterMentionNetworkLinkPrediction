@@ -19,8 +19,8 @@ def getMentionList(filein,fileout,full_mention):
         l = line.strip().split(',')
         uid_c = int(l[0])
         mid_c = int(l[1])
-        men_c = float(l[2])
-        curdir_c = int(l[3])
+        men_c = float(l[3])
+        curdir_c = int(l[2])
         if uid == 0:
             uid = uid_c
             mid = mid_c
