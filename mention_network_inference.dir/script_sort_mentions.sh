@@ -11,5 +11,5 @@ fi
 filein=$1
 fileout=$2
 
-#sort according to date,uid,mid
-cat $filein | sort -g -t , -k3,3 -k1,1 -k2,2 > $fileout
+#sort according to uid,mid,date
+cat $filein | sort -g -t , -k1,1 -k2,2 -k4,4 > $fileout
