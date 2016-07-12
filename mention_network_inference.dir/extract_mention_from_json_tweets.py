@@ -6,7 +6,7 @@ import json
 import datetime
 import re
 import time
-verbose=0
+verbose=1
 
 
 def parserperuser(fileinput,fileoutput):
@@ -47,9 +47,10 @@ def parserperuser(fileinput,fileoutput):
                 continue
 
     #summary
-    print(counter,' lines treated')
-    print(counter_skip_tw,' entries not treated for not containing tweets')
-    print(counter_skip_cr,' entries not treated for wrong format')
+    if verbose > 0:
+        print(counter,' lines treated')
+        print(counter_skip_tw,' entries not treated for not containing tweets')
+        print(counter_skip_cr,' entries not treated for wrong format')
 
 
 def main():
@@ -67,6 +68,10 @@ def main():
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
+
+    global verbose
+    if args.output == sys.stdout:
+        verbose=0
 
     ids_dumped = parserperuser(args.input,args.output)
     args.input.close()
