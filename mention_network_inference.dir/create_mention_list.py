@@ -1,5 +1,5 @@
 import sys,os,re,argparse
-
+verbose=1
 
 def getMentionList(filein,fileout,full_mention):
     uid = 0
@@ -61,7 +61,7 @@ def getMentionList(filein,fileout,full_mention):
                         umention_l = men_c
                         u_nmentions +=1
         counterl += 1
-        if counterl % 1000000 == 0:
+        if counterl % 1000000 == 0 and verbose > 0:
             print(counterl,'lines treated')
     #Print last line
     if ((u_nmentions * m_nmentions) > 0) or (full_mention > 0):
@@ -92,6 +92,10 @@ def main():
         parser.print_help()
         sys.exit(1)
     args = parser.parse_args()
+    global verbose
+    if args.output == sys.stdout:
+        verbose=0
+
     getMentionList(args.input,args.output,args.full_mentions)
     args.input.close()
     args.output.close()

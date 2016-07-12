@@ -32,11 +32,11 @@ def parserperuser(fileinput,fileoutput):
                 elif sys.version_info.major == 2:
                     #dt.strftime('%s')
                     dt = time.mktime(da.timetuple())
-                for m in tweet['twitter']['mention_ids']:
+                for mid in tweet['twitter']['mention_ids']:
                         if uid > mid:
-                            fileoutput.write(str(mid)+','+st(uid)+','+str(1)+','+str(dt)+'\n')
+                            fileoutput.write(str(mid)+','+str(uid)+','+str(1)+','+str(dt)+'\n')
                         else:
-                            fileoutput.write(str(uid)+','+st(mid)+','+str(0)+','+str(dt)+'\n')
+                            fileoutput.write(str(uid)+','+str(mid)+','+str(0)+','+str(dt)+'\n')
                         counter+=1
                 if counter%10000 == 0:
                     print(counter,' lines added')
