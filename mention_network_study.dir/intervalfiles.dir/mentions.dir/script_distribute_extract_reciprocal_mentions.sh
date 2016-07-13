@@ -9,7 +9,7 @@ then
     exit 1
 fi
 
-debug=2
+debug=1
 
 indir=$1
 outdir=$2
@@ -87,7 +87,7 @@ do
             echo -e "\n################################"
             echo "# On $mac ($env) at $(date)      #"
             echo -e "################################"
-            echo -e "Extracting reciprocla mention for period file $(basenamem $filein)"
+            echo -e "Extracting reciprocal mention for period file $(basename $filein)"
         fi
         ssh $user@$mac "(cd $cwd && screen -d -m ./extract_reciprocal_mentions.sh $FILEIN $FILEOUT)"
     fi
