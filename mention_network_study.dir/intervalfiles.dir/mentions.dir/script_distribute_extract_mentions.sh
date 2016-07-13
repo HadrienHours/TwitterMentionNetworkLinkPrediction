@@ -9,7 +9,7 @@ then
     exit 1
 fi
 
-debug=0
+debug=2
 
 infile=$1
 outdir=$2
@@ -22,7 +22,7 @@ then
     mkdir -p $outdir
 fi
 
-listmacs=${listm}_tmp
+listmacs=$(basename $listm | sed -re 's/\.[a-z]+$//1')_${RANDOM}.tsv
 
 if [ -f $listmacs ]
 then
@@ -45,8 +45,8 @@ do
 done < <(cat $listm)
 
 cwdt=`pwd`
-cwd=$(echo $cwdt | sed -re 's/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1')
-dirout2=$(echo $outdir | sed -re 's/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1')
+cwd=$(echo $cwdt | sed -re "s/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1")
+dirout2=$(echo $outdir | sed -re "s/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1")
 
 while read -u 3 linedates
 do
@@ -80,21 +80,19 @@ do
     d2=$(echo $linedates | cut -d , -f2)
     d1n=$(echo $d1 | cut -d . -f1)
     d2n=$(echo $d2 | cut -d . -f1)
-    OUTPUT=$dirout2/listmentions_period_${d1n}_${d2n}.csv
+    OUTPUT=$dirout2/listmentions_period_${d1n}_${d2n}.gz
     INPUT=$(echo $infile | sed -re 's/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1')
 
 
     if [ $debug -eq 1 ]
     then
-        echo -e "ssh $user@$mac \"(cd $cwd && screen -d -m bash -c 'source /datastore/complexnet/test_hours/$env/bin/activate; \npython extract_mentions_interval_one_interval_20160331.py \n\t -i $INPUT \n\t-d1 $d1 \n\t-d2 $d2 \n\t-o $OUTPUT')\""
+        echo -e "ssh $user@$mac \"(cd $cwd && screen -d -m ./launcher.sh $INPUT $OUTPUT $d1 $d2 )\""
     else
         echo -e "\n################################"
         echo "# On $mac ($env) at $(date)      #"
         echo -e "################################"
-        echo -e "cmd launched \n python extract_mentions_interval_one_interval_20160331.py -i $INPUT -d1 $d1 -d2 $d2 -o $OUTPUT"
-        ssh $user@$mac "(cd $cwd && screen -d -m python extract_mentions_interval_one_interval_20160331.py -i $INPUT -d1 $d1 -d2 $d2 -o $OUTPUT)"
-
-        #ssh $user@$mac "(cd $cwd && screen -d -m bash -c 'source /datastore/complexnet/test_hours/$env/bin/activate; python extract_mentions_interval_one_interval_20160331.py -i $INPUT -d1 $d1 -d2 $d2 -o $OUTPUT')"
+        echo -e "Extracting mention for period $d1 - $d2, input $INPUT, output $OUTPUT"
+        ssh $user@$mac "(cd $cwd && screen -d -m ./launcher.sh $INPUT $OUTPUT $d1 $d2)"
     fi
 done 3< $listts
 

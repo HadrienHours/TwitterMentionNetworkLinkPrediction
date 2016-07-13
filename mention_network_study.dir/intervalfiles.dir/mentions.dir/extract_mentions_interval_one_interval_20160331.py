@@ -1,6 +1,6 @@
 import sys,os,re,argparse,csv,numpy as np
 
-full_mention = 1
+verbose=1
 
 def extractmentions(inputf,outputf,date1,date2):
     counterl = 0
@@ -16,9 +16,11 @@ def extractmentions(inputf,outputf,date1,date2):
             else:
                 outputf.write(str(mid)+','+str(uid)+',1\n')
         elif t > date2:
-            print('Exiting for ',t,'bigger than',date2)
+            if verbose > 0:
+                print('Exiting for ',t,'bigger than',date2)
             break
-    print(counterl,'mentions found for period [',date1,'-',date2,']')
+    if verbose > 0:
+        print(counterl,'mentions found for period [',date1,'-',date2,']')
 
 
 def main():
@@ -29,6 +31,7 @@ def main():
             help="Input file in the format user1,user2,date(epoch): SORTED BY TIME")
     parser.add_argument("-o","--output",
             type=argparse.FileType('w'),
+            default=sys.stdout,
             help="Output file in the format user1,user2,direction (user1<user2)")
     parser.add_argument('-d1','--date1',
             type=float,
@@ -42,6 +45,11 @@ def main():
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
+
+    global verbose
+    if args.output == sys.stdout:
+        verbose=0
+
     extractmentions(args.input,args.output,args.date1,args.date2)
 
     args.input.close()
