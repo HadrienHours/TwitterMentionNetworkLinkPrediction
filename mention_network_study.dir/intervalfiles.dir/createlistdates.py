@@ -1,8 +1,8 @@
 # *-* coding: utf-8 *-*
 import os,sys,csv,argparse
 
-def createListDate(date1,date2,step,overlap,fileout):
-    writer = csv.writer(fileout,delimiter=',')
+def createListDateTesting(date1,date2,step,overlap,fileout):
+    writer = csv.writer(fileout,delimiter=',',lineterminator=os.linesep)
     step2=step-overlap
     d1 = date1
     d2 = date2
@@ -10,11 +10,18 @@ def createListDate(date1,date2,step,overlap,fileout):
         d2 = d1 + step
         writer.writerow([d1,d2])
         d1 = d1+ step2
-    
+def createListDateTraining(date1,date2,step,fileout):
+    writer = csv.writer(fileout,delimiter=',',lineterminator=os.linesep)
+    d1 = date1
+    d2 = date1
+    while d2 < date2 :
+        d2 = d2 + step
+        writer.writerow([d1,d2])
+   
 
 def main():
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='generate testing and training period, if overlap not provided or equal 0, training periods generated. Otherwise, testing periods')
     parser.add_argument('-d1','--date1',
             type=float,
             help="First date (epoch)")
@@ -26,6 +33,7 @@ def main():
             help='Length of each sub period (seconds)')
     parser.add_argument('-l','--overlap',
             type=float,
+            default=0,
             help='Overlap (seconds)')
     parser.add_argument('-o','--output',
             type=argparse.FileType('w'),
@@ -40,7 +48,10 @@ def main():
         print('The overlap between two consecutive period cannot be bigger than the length of the period')
         sys.exit(1)
 
-    createListDate(args.date1,args.date2,args.step,args.overlap,args.output)
+    if args.overlap != 0:
+        createListDateTesting(args.date1,args.date2,args.step,args.overlap,args.output)
+    else:
+        createListDateTraining(args.date1,args.date2,args.step,args.output)
 
     args.output.close()
 
