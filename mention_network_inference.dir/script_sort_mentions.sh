@@ -12,14 +12,14 @@ filein=$1
 fileout=$2
 
 #sort according to uid,mid,date
-if [ "($basename $filein | awk -F "." '{print $NF}')" == ".gz" ]
+if [ "$(basename $filein | awk -F "." '{print $NF}')" == "gz" ]
 then
     zcat $filein | sort -g -t , -k1,1 -k2,2 -k4,4 | gzip > $fileout
-elif [ "($basename $filein | awk -F "." '{print $NF}')" == ".csv" ]
+elif [ "$(basename $filein | awk -F "." '{print $NF}')" == "csv" ]
 then
     cat $filein | sort -g -t , -k1,1 -k2,2 -k4,4 | gzip > $fileout
 else
-    echo "Unrecognized input format"
+    echo "Unrecognized input format $(basename $filein | awk -F "." '{print $NF}')"
     exit 1
 fi
 

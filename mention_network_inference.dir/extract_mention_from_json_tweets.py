@@ -38,7 +38,7 @@ def parserperuser(fileinput,fileoutput):
                         else:
                             fileoutput.write(str(uid)+','+str(mid)+','+str(0)+','+str(dt)+'\n')
                         counter+=1
-                if counter%10000 == 0:
+                if counter%10000 == 0 and verbose > 0:
                     print(counter,' lines added')
 
             except Exception as e:
