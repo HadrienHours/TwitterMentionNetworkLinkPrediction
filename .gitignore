@@ -91,6 +91,11 @@ ENV/
 *.csv
 *.tsv
 *.tsv_tmp
+*.txt
+
+#compressed files
+*.zip
+*.gz
 
 #unformatted output
 *.out
