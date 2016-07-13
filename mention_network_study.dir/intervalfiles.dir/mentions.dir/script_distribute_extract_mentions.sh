@@ -9,7 +9,7 @@ then
     exit 1
 fi
 
-debug=2
+debug=1
 
 infile=$1
 outdir=$2
@@ -84,14 +84,17 @@ do
     INPUT=$(echo $infile | sed -re 's/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1')
 
 
-    if [ $debug -eq 1 ]
+    if [ $debug -gt 1 ]
     then
         echo -e "ssh $user@$mac \"(cd $cwd && screen -d -m ./launcher.sh $INPUT $OUTPUT $d1 $d2 )\""
     else
-        echo -e "\n################################"
-        echo "# On $mac ($env) at $(date)      #"
-        echo -e "################################"
-        echo -e "Extracting mention for period $d1 - $d2, input $INPUT, output $OUTPUT"
+        if [ $debug -gt 0 ]
+        then
+            echo -e "\n################################"
+            echo "# On $mac ($env) at $(date)      #"
+            echo -e "################################"
+            echo -e "Extracting mention for period $d1 - $d2, input $INPUT, output $OUTPUT"
+        fi
         ssh $user@$mac "(cd $cwd && screen -d -m ./launcher.sh $INPUT $OUTPUT $d1 $d2)"
     fi
 done 3< $listts
