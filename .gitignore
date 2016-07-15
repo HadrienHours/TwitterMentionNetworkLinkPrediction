@@ -96,6 +96,7 @@ ENV/
 #compressed files
 *.zip
 *.gz
+*.tgz
 
 #unformatted output
 *.out
