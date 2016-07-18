@@ -18,11 +18,11 @@ then
     mkdir -p $dirout
 fi
 
-for filestream in $dircatstream/*.csv
+for filestream in $dircatstream/*.tgz
 do
-    fileout=$dirout/$(basename $filestream | sed -re 's/\.csv//1')_FULLVECTORS.csv
+    fileout=$dirout/$(basename $filestream | sed -re 's/\.tgz//1')_FULLVECTORS.tgz
     echo "Start vectorizing $(basename $filestream)"
-    nc=$(cat $filestream | cut -d , -f2 | sort -n | uniq | sort -rn | head -1)
+    nc=$(zcat $filestream | cut -d , -f2 | sort -n | uniq | sort -rn | head -1)
     nCats=$(( $nc+1 ))
-    python create_vectors.py -i $filestream -o $fileout -c $nCats
+    python create_vectors.py -i <(zcat $filestream) -c $nCats | gzip > $fileout
 done

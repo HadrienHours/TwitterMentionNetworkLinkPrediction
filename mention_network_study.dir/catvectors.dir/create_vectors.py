@@ -1,6 +1,8 @@
 # *-* coding: utf-8 *-*
 import argparse,sys,os,csv
 
+verbose=1
+
 def vectorizeStream(filein,fileout,nCats):
     writer = csv.writer(fileout,delimiter=',')
     counterl=0
@@ -16,8 +18,9 @@ def vectorizeStream(filein,fileout,nCats):
             cat_c=int(listv[1])
             occ_c=int(listv[2])
         except ValueError as e:
-            print('Wrong format, line below skipped')
-            print(line)
+            if verbose > 0:
+                print('Wrong format, line below skipped')
+                print(line)
             continue
         if uid == -1:
             uid=uid_c
@@ -35,7 +38,7 @@ def vectorizeStream(filein,fileout,nCats):
             vect[cat_c] = float(occ_c)
             sumv+= occ_c
         counterl+=1
-        if counterl%1000 == 0:
+        if counterl%1000 == 0 and verbose > 0:
             print(counterl,'lines treated')
     #write last line
     vect = [el/sumv for el in vect]
@@ -60,6 +63,10 @@ def main():
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
+
+    global verbose
+    if args.output == sys.stdout:
+        verbose=0
 
     vectorizeStream(args.input,args.output,args.nCats)
     args.input.close()

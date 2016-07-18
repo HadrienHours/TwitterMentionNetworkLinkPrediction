@@ -19,10 +19,10 @@ then
     mkdir -p $dirout
 fi
 
-for filein in $dirhsh/*.csv
+for filein in $dirhsh/*.tgz
 do
-    fileout=$dirout/$(basename $filein | sed -re 's/\.csv//1')_CATVECTORS.csv
-    echo "Userid,Category,Occurrences" > $fileout
-    cat $filein | grep -iv "Userid" | sort -t , -n -k1,1 -k2,2 | uniq -c | awk 'BEGIN{OFS=","}{print $2,$1}' >> $fileout
+    fileout=$dirout/$(basename $filein | sed -re 's/\.tgz//1')_CATVECTORS.tgz
+    echo "Userid,Category,Occurrences" | gzip > $fileout
+    zcat $filein | grep -iv "Userid" | sort -t , -n -k1,1 -k2,2 | uniq -c | awk 'BEGIN{OFS=","}{print $2,$1}' | gzip >> $fileout
     echo "$(basename $filein) treated"
 done
