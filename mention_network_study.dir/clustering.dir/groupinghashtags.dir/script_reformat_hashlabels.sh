@@ -25,11 +25,11 @@ fi
 for fin in $dirin/*.csv
 do
     echo -e "Treating file \e[3m$fin\e[0m"
-    fout=$(echo $fin | sed -re 's/\.csv//1')_REFORMATTED.csv
-    fstat=$sizdir/$(basename $fin | sed -re 's/\.csv//1')_CLUSTERSIZES.csv
+    fout=$(echo $fin | sed -re 's/\.csv//1')_REFORMATTED.tgz
+    fstat=$sizdir/$(basename $fin | sed -re 's/\.csv//1')_CLUSTERSIZES.tgz
     #remove header and non core points, sort hashes for future join
-    cat $fin | sed 1d | egrep -v ",$" | sort -t  , -k1,1 > $fout
-    cat $fin | sed 1d | egrep -v ",$" | cut -d , -f2 | sort -n | uniq -c | awk 'BEGIN{OFS=","}{print $2,$1}' | sort -n -t , -k1,1 > $fstat
+    zcat $fin | sed 1d | egrep -v ",$" | sort -t  , -k1,1 | gzip > $fout
+    zcat $fin | sed 1d | egrep -v ",$" | cut -d , -f2 | sort -n | uniq -c | awk 'BEGIN{OFS=","}{print $2,$1}' | sort -n -t , -k1,1 | gzip > $fstat
     mv $fin $auxdir
     echo -e "\e[3m$fin\e[0m moved to \e[4m$auxdir\e[0m\n"
 done

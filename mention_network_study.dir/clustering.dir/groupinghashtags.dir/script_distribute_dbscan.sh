@@ -2,7 +2,7 @@
 
 minNARGS=4
 maxNARGS=7
-debug=0
+debug=2
 
 renice=0
 if [ $# -lt $minNARGS ] ||  [ $# -gt $maxNARGS ]
@@ -38,7 +38,7 @@ fi
 
 if [ -z $radius ]
 then
-    radius=0.7
+    radius=0.5
     RADIUS=$(echo $radius | tr \. -)
 fi
 
@@ -93,14 +93,14 @@ then
 fi
 
 cwdt=`pwd`
-cwd=$(echo $cwdt | sed -re 's/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1')
-dirout2=$(echo $dirout | sed -re 's/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1')
+cwd=$(echo $cwdt | sed -re "s/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1")
+dirout2=$(echo $dirout | sed -re "s/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1")
 
 
 nmacs=$(wc -l $listmacs | awk '{print $1}')
 counter=1
 
-for file in $dirinp/*.csv
+for file in $dirinp/*.tgz
 do
     #find a machine with no job running
     flag_f=0
@@ -136,24 +136,26 @@ do
             sleep 60
         fi
     done
-    OUTPUT=$dirout2/$(basename $file | cut -d . -f1)_LABELS_DBSCAN_R_${RADIUS}_N_${minNeighbors}_T_${minTweets}.csv
-    INPUT=$(echo $file | sed -re 's/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1')
+    OUTPUT=$dirout2/$(basename $file | sed -re 's/\.[a-z]+$//1')_LABELS_DBSCAN_R_${RADIUS}_N_${minNeighbors}_T_${minTweets}.csv
+    INPUT=$(echo $file | sed -re "s/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1")
 
     if [ $debug -gt 1 ]
     then
         echo "ssh $user@$mac \"(cd $cwd && screen -d -m bash -c 'source /datastore/complexnet/test_hours/conda_install.dir/install_dir/bin/activate dato-env; python clusterhashtweets.py -i $INPUT -o $OUTPUT -n $minNeighbors -r $radius -m $minTweets')\""
     else
-        echo -e "\n################################"
-        echo "# On $mac ($env) at $(date)      #"
-        echo -e "################################"
-        echo "cmd launched python clusterhashtweets.py -i $INPUT -o $OUTPUT -n $minNeighbors -r $radius -m $minTweets"
+        if [ $debug -gt 0 ]
+        then
+            echo -e "\n################################"
+            echo "# On $mac ($env) at $(date)      #"
+            echo -e "################################"
+            echo "cmd launched python clusterhashtweets.py -i $INPUT -o $OUTPUT -n $minNeighbors -r $radius -m $minTweets"
+        fi
         ssh $user@$mac "(cd $cwd && screen -d -m bash -c 'source /datastore/complexnet/test_hours/conda_install.dir/install_dir/bin/activate dato-env; python clusterhashtweets.py -i $INPUT -o $OUTPUT -n $minNeighbors -r $radius -m $minTweets')"
         if [ $renice -gt 1 ]
         then
             ssh -n $user@$mac "renice -n 5 -u $user"
         fi
     fi
-    echo -e "DBSCAN  with input $file on machine $mac\n"
 done
 
 rm $listmacs
