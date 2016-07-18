@@ -2,7 +2,7 @@
 
 minNARGS=4
 maxNARGS=7
-debug=2
+debug=1
 
 renice=0
 if [ $# -lt $minNARGS ] ||  [ $# -gt $maxNARGS ]
@@ -136,7 +136,7 @@ do
             sleep 60
         fi
     done
-    OUTPUT=$dirout2/$(basename $file | sed -re 's/\.[a-z]+$//1')_LABELS_DBSCAN_R_${RADIUS}_N_${minNeighbors}_T_${minTweets}.csv
+    OUTPUT=$dirout2/$(basename $file | sed -re 's/\.[a-z]+$//1')_LABELS_DBSCAN_R_${RADIUS}_N_${minNeighbors}_T_${minTweets}.tgz
     INPUT=$(echo $file | sed -re "s/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1")
 
     if [ $debug -gt 1 ]
