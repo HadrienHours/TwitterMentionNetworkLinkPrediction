@@ -107,4 +107,4 @@ ENV/
 *.svg
 
 #specific dir
-clustering.dir/TFIDF
+mention_network_study.dir/study_overlap.dir/extract_user_first_activity.dir/output.dir/perPeriod.dir/
