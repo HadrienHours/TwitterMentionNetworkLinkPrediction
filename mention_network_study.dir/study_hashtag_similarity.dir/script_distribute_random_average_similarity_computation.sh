@@ -12,7 +12,7 @@ then
     exit 1
 fi
 
-debug=2
+debug=1
 
 dircat=$1
 dirm=$2

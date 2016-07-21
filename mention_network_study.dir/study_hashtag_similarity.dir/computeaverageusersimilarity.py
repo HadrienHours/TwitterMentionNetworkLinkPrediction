@@ -82,7 +82,6 @@ def computeUserAverageSimilarity(listCatVectors,nSims,mM,sM,fileoutR,fileoutAvg)
 
     s1 = 'uid,mid,cosine_similaritiy\n'
     p1.stdin.write(s1.encode('utf-8'))
-    p1.stdin.close()
     while count < nSims:
         u1 = random.randint(0,nC-1)
         u2 = random.randint(0,nC-1)
@@ -92,6 +91,7 @@ def computeUserAverageSimilarity(listCatVectors,nSims,mM,sM,fileoutR,fileoutAvg)
         s1 = str(u1)+','+str(u2)+','+str(sims[count])+'\n'
         p1.stdin.write(s1.encode('utf-8'))
         count += 1
+    p1.stdin.close()
     s1 = 'Type,Count,Average,Std\n'
     p2.stdin.write(s1.encode('utf-8'))
     s1 = 'Mentions,'+str(nSims)+','+str(mM)+','+str(sM)+'\n'
