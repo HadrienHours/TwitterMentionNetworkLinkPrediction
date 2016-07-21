@@ -1,26 +1,24 @@
 #!/bin/bash
 
-NARGS=6
+NARGS=5
 
 if [ $# -ne $NARGS ]
 then
-    echo -e "\n\t$(tput bold)Usage of $(basename $0):<dircatvectors><dirusercouples><dirout><tablePeriods><username><listmachines>\n"
+    echo -e "\n\t$(tput bold)Usage of $(basename $0):<dircatvectors><dirusercouples><dirout><username><listmachines>\n"
     tput sgr0
     echo "Cat vectors:<uid,nCat1,...,nCatK"
     echo "User coules:<u1,u2>"
-    echo "Table periods:<endTrainingPeriod,beginingTestingPeriod-endTestingPeriod>"
     echo "listmachine: <machinename  virtualenv>"
     exit 1
 fi
 
-debug=0
+debug=2
 
 dircat=$1
 dirm=$2
 dirout=$3
-tableConv=$4
-user=$5
-listm=$6
+user=$4
+listm=$5
 auxdir=$dirout/MENTIONSIMILARITY.dir
 
 if [ ! -d $auxdir ]  && [ $debug -eq 0 ]
@@ -55,30 +53,30 @@ else
 fi
 
 cwdt=`pwd`
-cwd=$(echo $cwdt | sed -re 's/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1')
-dirout2=$(echo $dirout | sed -re 's/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1')
-auxdir2=$(echo $auxdir | sed -re 's/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1')
+cwd=$(echo $cwdt | sed -re "s/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1")
+dirout2=$(echo $dirout | sed -re "s/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1")
+auxdir2=$(echo $auxdir | sed -re "s/\/media\/$user\//\/datastore\/complexnet\/test_hours\//1")
 
-for file in $dirm/*.csv
+for file in $dirm/*.tgz
 do
     #find corresponding cat vector file
-    periodtst=$(basename $file | egrep -o "[0-9]+\-[0-9]+")
-    #echo "periodtrain=\$(cat $tableConv | grep \"$periodtst\" | cut -d , -f1)"
-    periodtrain=$(cat $tableConv | grep "$periodtst" | cut -d , -f1)
-    if [ -z $periodtrain ]
+    periodtst=$(basename $file | egrep -o "[0-9]{10}[_\-]{1}[0-9]{10}")
+    endPeriodTrn=$(echo $periodtst | cut -d _ -f1)
+    if [ -z $endPeriodTrn ]
     then
         echo "No training period found for the testing period $periodtst"
         continue
     fi
     if [ $debug -gt 1 ]
     then
-        echo -e "Training period found for testing period $periodtst:\t$periodtrain"
+        echo -e "End training period found for testing period $periodtst:\t$endPeriodTrn"
     fi
-    file2=$(ls $dircat | grep "$periodtrain")
+    file2=$(basename $(ls $dircat/*.tgz | grep "_$endPeriodTrn\|\-$endPeriodTrn"))
+    periodtrain=$(echo $file2 | egrep -o "[0-9]{10}[_\-]{1}[0-9]{10}")
 
     if [ -z $file2 ]
     then
-        echo "No cat vector found for period $periodtst ($periodtrain) in $dircat"
+        echo "No cat vector found for period $periodtst ($periodtrain, $endPeriodTrn) in $dircat"
         continue
     else
         file2=$dircat/$file2
@@ -118,21 +116,24 @@ do
     done
 
     #rename output/input for remote machines
-    OUTPUT1=$auxdir2/$(basename $file | cut -d . -f1)_MENTION_USER_SIMILARITY.csv
-    OUTPUT2=$auxdir2/$(basename $file | cut -d . -f1)_RANDOM_USER_SIMILARITY.csv
-    OUTPUT3=$dirout2/$(basename $file | cut -d . -f1)_AVERAGE_SIMILARITY_NEIGHBOR_VS_RANDOM.csv
+    OUTPUT1=$auxdir2/$(basename $file | sed -re 's/\.[a-z]+$//1')_MENTION_USER_SIMILARITY.tgz
+    OUTPUT2=$auxdir2/$(basename $file | sed -re 's/\.[a-z]+$//1')_RANDOM_USER_SIMILARITY.tgz
+    OUTPUT3=$dirout2/$(basename $file | sed -re 's/\.[a-z]+$//1')_AVERAGE_SIMILARITY_NEIGHBOR_VS_RANDOM.tgz
     INPUTM=$(echo $file | sed -re 's/\/media\/$user/\/datastore\/complexnet\/test_hours/1')
     INPUTC=$(echo $file2 | sed -re 's/\/media\/$user/\/datastore\/complexnet\/test_hours/1')
-    if [ $debug -gt 0 ]
+    if [ $debug -gt 1 ]
     then
-        echo "ssh $user@$mac \"(cd $cwd && screen -d -m bash -c 'source /datastore/complexnet/test_hours/$env/bin/activate; python computeaverageusersimilarity.py -c $INPUTC -u $INPUTM -o1 $OUTPUT1 -o2 $OUTPUT2 -o3 $OUTPUT3')\""
+        echo "ssh $user@$mac \"(cd $cwd && screen -d -m bash -c 'source /datastore/complexnet/test_hours/$env/bin/activate; python computeaverageusersimilarity.py -c <(zcat $INPUTC) -u <(zcat $INPUTM) -o1 $OUTPUT1 -o2 $OUTPUT2 -o3 $OUTPUT3')\""
         echo -e "#######################################################################################################################################################################\n\n"
     else
-        echo -e "\n################################"
-        echo "# On $mac ($env) at $(date)      #"
-        echo -e "################################"
-        echo "cmd launched python computeaverageusersimilarity.py -c $INPUTC -u $INPUTM -o1 $OUTPUT1 -o2 $OUTPUT2 -o3 $OUTPUT3"
-        ssh $user@$mac "(cd $cwd && screen -d -m bash -c 'source /datastore/complexnet/test_hours/$env/bin/activate; python computeaverageusersimilarity.py -c $INPUTC -u $INPUTM -o1 $OUTPUT1 -o2 $OUTPUT2 -o3 $OUTPUT3')"
+        if [ $debug -gt 0 ]
+        then
+            echo -e "\n################################"
+            echo "# On $mac ($env) at $(date)      #"
+            echo -e "################################"
+            echo "cmd launched python computeaverageusersimilarity.py -c <(zcat $INPUTC) -u <(zcat $INPUTM) -o1 $OUTPUT1 -o2 $OUTPUT2 -o3 $OUTPUT3"
+        fi
+        ssh $user@$mac "(cd $cwd && screen -d -m bash -c 'source /datastore/complexnet/test_hours/$env/bin/activate; python computeaverageusersimilarity.py -c <(zcat $INPUTC) -u <(zcat $INPUTM) -o1 $OUTPUT1 -o2 $OUTPUT2 -o3 $OUTPUT3')"
     fi
 done
 

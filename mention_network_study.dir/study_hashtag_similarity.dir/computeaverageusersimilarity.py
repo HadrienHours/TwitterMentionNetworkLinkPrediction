@@ -1,5 +1,5 @@
 # *-* coding: utf-8 *-*
-import os,sys,argparse,csv,random
+import os,sys,argparse,csv,random,subprocess
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 verbose=1
@@ -26,7 +26,8 @@ def createListUsers(fileUsers):
     return listUsers
 
 def computeUserSimilarity(listUsers,listCatVectors,listIndexes,fileout):
-    writer = csv.writer(fileout,delimiter=',')
+    #writer = csv.writer(fileout,delimiter=',')
+    p = subprocess.Popen("gzip -c > "+fileout,shell=True,stdin=subprocess.PIPE)
     nV=len(listUsers)
     thr=int(nV/100)
     counter=0
@@ -58,7 +59,8 @@ def computeUserSimilarity(listUsers,listCatVectors,listIndexes,fileout):
         ar_t = np.append(ar,s12)
         ar = ar_t
         del ar_t
-        writer.writerow([u1,u2,s12])
+        inp=str(u1)+','+str(u2)+','+str(s12)+'\n'
+        p.stdin.write(inp.encode('utf-8'))
         counterv+=1
         if counter%thr == 0:
             perc+=1
@@ -68,26 +70,35 @@ def computeUserSimilarity(listUsers,listCatVectors,listIndexes,fileout):
     print(counterskip,'mentions had to be skipped')
     m = ar.mean()
     s = ar.std()
+    p.stdin.close()
     return (counterv,m,s)
 
 def computeUserAverageSimilarity(listCatVectors,nSims,mM,sM,fileoutR,fileoutAvg):
     nC = len(listCatVectors)
     sims = np.zeros(nSims)
     count = 0
-    writer1 = csv.writer(fileoutR,delimiter=',',lineterminator=os.linesep)
-    writer2 = csv.writer(fileoutAvg,delimiter=',',lineterminator=os.linesep)
-    writer1.writerow(['uid','mid','cosine_similarit'])
+    p1 = subprocess.Popen("gzip -c > "+fileoutR,shell=True,stdin=subprocess.PIPE)
+    p2 = subprocess.Popen("gzip -c > "+fileoutAvg,shell=True,stdin=subprocess.PIPE)
+
+    s1 = 'uid,mid,cosine_similaritiy\n'
+    p1.stdin.write(s1.encode('utf-8'))
+    p1.stdin.close()
     while count < nSims:
         u1 = random.randint(0,nC-1)
         u2 = random.randint(0,nC-1)
         c1 = listCatVectors[u1]
         c2 = listCatVectors[u2]
         sims[count] = cosine_similarity(c1,c2)[0][0]
-        writer1.writerow([u1,u2,sims[count]])
+        s1 = str(u1)+','+str(u2)+','+str(sims[count])+'\n'
+        p1.stdin.write(s1.encode('utf-8'))
         count += 1
-    writer2.writerow(['Type','Count','Average','Std'])
-    writer2.writerow(['Mentions',nSims,mM,sM])
-    writer2.writerow(['Random',count,sims.mean(),sims.std()])
+    s1 = 'Type,Count,Average,Std\n'
+    p2.stdin.write(s1.encode('utf-8'))
+    s1 = 'Mentions,'+str(nSims)+','+str(mM)+','+str(sM)+'\n'
+    p2.stdin.write(s1.encode('utf-8'))
+    s1 = 'Random,'+str(count)+','+str(sims.mean())+','+str(sims.std())+'\n'
+    p2.stdin.write(s1.encode('utf-8'))
+    p2.stdin.close()
 
 def main():
     parser = argparse.ArgumentParser()
@@ -98,13 +109,16 @@ def main():
             type=argparse.FileType('r'),
             help="File containing the list of user couples in format <uid1,uid2>")
     parser.add_argument('-o1','--output1',
-            type=argparse.FileType('w'),
+            type=str,
+            required=True,
             help="Output file with similarity for each couple of users mentioning each other")
     parser.add_argument('-o2','--output2',
-            type=argparse.FileType('w'),
+            type=str,
+            required=True,
             help="Output file with similarity for couples of users randomly picked")
     parser.add_argument('-o3','--output3',
-            type=argparse.FileType('w'),
+            type=str,
+            required=True,
             help="Output file with average similarity and std")
 
     args = parser.parse_args()
@@ -121,10 +135,8 @@ def main():
     nS,mM,sM = computeUserSimilarity(listUsers,listCatVectors,listUserIds,args.output1)
     computeUserAverageSimilarity(listCatVectors,nS,mM,sM,args.output2,args.output3)
 
-    args.output1.close()
-    args.output2.close()
-    args.output3.close()
     args.listCatVectors.close()
+    args.listUsers.close()
 
 if __name__ == '__main__':
     main()
