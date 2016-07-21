@@ -11,4 +11,4 @@ fi
 filein=$1
 fileout=$2
 
-python extract_user_first_activity.py -i <(zcat $filein | sort -g -t , -k1,1 -k2,2) | gzip > $fileout
+python extract_user_first_activity.py -i <(zcat $filein | sort -g -t , -k1,1 -k2,2) | sort -g -t , -k2,2 | gzip > $fileout
