@@ -25,10 +25,10 @@ fi
 
 echo "Period,average_similarity_mention,average_similarity_random" > $fileout
 
-for l in $dirinputs/*.csv
+for l in $dirinputs/*.tgz
 do 
-    period=$(basename $l | egrep -o "[0-9]+\-[0-9]+")
-    avgm=$(cat $l | awk -F , '{print $3}' | sed '1d'| head -1)
-    avgr=$(cat $l | awk -F , '{print $3}' | sed '1d' | tail -1)
+    period=$(basename $l | egrep -o "[0-9]+[_\-]{1}[0-9]+")
+    avgm=$(zcat $l | awk -F , '{print $3}' | sed '1d'| head -1)
+    avgr=$(zcat $l | awk -F , '{print $3}' | sed '1d' | tail -1)
     echo "$period,$avgm,$avgr" >> $fileout
 done

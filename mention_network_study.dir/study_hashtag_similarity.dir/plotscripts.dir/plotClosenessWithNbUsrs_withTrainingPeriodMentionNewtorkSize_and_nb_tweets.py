@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import sys,os,csv,argparse
 
 
-def plotSimNUsr(fileoverlap,fileout,tit,log):
+def plotSimNUsr(filehashsim,fileout,tit,log):
 
 #    plt.figure(figsize=(6, 8))
 
@@ -12,17 +12,17 @@ def plotSimNUsr(fileoverlap,fileout,tit,log):
     width = height = 0.7
 
     #remove header
-    fileoverlap.readline()
-    listoverlaps = list(csv.reader(fileoverlap,delimiter=','))
-    listoverlaps1 = []
-    for el in listoverlaps:
-        listoverlaps1.append([float(el2) for el2 in el[1:]])
-    listNTweetsTraining = [int(el[0]) for el in listoverlaps1]
-    listNTweetsTesting = [int(el[1]) for el in listoverlaps1]
-    listNTraining = [int(el[2]) for el in listoverlaps1 ]
-    listNTesting = [int(el[3]) for el in listoverlaps1]
-    listoverlap_mention = [el[4] for el in listoverlaps1]
-    listoverlap_random = [el[5] for el in listoverlaps1]
+    filehashsim.readline()
+    hashsims = list(csv.reader(filehashsim,delimiter=','))
+    hashsim1 = []
+    for el in hashsims:
+        hashsim1.append([float(el2) for el2 in el[1:]])
+    listNTweetsTraining = [int(el[0]) for el in hashsim1]
+    listNTweetsTesting = [int(el[1]) for el in hashsim1]
+    listNTraining = [int(el[2]) for el in hashsim1 ]
+    listNTesting = [int(el[3]) for el in hashsim1]
+    hasim_neighbor = [el[4] for el in hashsim1]
+    hasim_random = [el[5] for el in hashsim1]
 
     plt.figure()
     ax_main = plt.axes([left,bottom,width,height])
@@ -39,9 +39,9 @@ def plotSimNUsr(fileoverlap,fileout,tit,log):
     ax_main.bar(range(len(listNTesting)),listNTesting,alpha=0.6,color='b')
 
     ax3 = ax_main.twinx()
-    ax3.plot(range(len(listoverlaps1)),listoverlap_mention,'r--',lw=1.5,marker='*',markersize=10,label='Overlap mention neighbors')
-    ax3.plot(range(len(listoverlaps1)),listoverlap_random,'r--',lw=1.5,marker='.',markersize=12,label='Overlap random nodes')
-    ax3.set_ylabel('Average closeness for users',fontsize=24)
+    ax3.plot(range(len(hashsim1)),hasim_neighbor,'r--',lw=1.5,marker='*',markersize=10,label='Hashtag similarity neighbors')
+    ax3.plot(range(len(hashsim1)),hasim_random,'r--',lw=1.5,marker='.',markersize=12,label='Hashtag similarity average')
+    ax3.set_ylabel('Average hashtag similarity for users',fontsize=24)
     if log:
         ax3.set_yscale('log')
     ax3.yaxis.label.set_color('r')
@@ -58,17 +58,17 @@ def plotSimNUsr(fileoverlap,fileout,tit,log):
 
 
     if tit:
-        plt.title('Comparison average overlap\nNeighbors/Random nodes\nEvolving network',fontsize=28,fontweight='bold')
+        plt.title('Comparison average hash similarity\nNeighbors/Random nodes\nEvolving network',fontsize=28,fontweight='bold')
     #plt.tight_layout()
     plt.draw()
     plt.savefig(fileout)
     plt.close()
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-i','--inputOverlap',
+    parser = argparse.ArgumentParser(description="Plot hashtag similarity neighbor vs average with number of mentions and number of tweets for the diffrent testing/training periiods")
+    parser.add_argument('-i','--inputHashsim',
             type = argparse.FileType('r'),
-            help = "File storing overlap, per period, for neigbors and random in the format <period,nbTweetsTraining,nbTweetsTesting,nbMentionsTraining,nbMentionsTraining,neighors,random> (assume header)")
+            help = "File storing overlap, per period, for neigbors and random in the format <period,nbTweetsTraining,nbTweetsTesting,nbMentionsTraining,nbMentionsTraining,hashsimneighors,hashsimrandom> (assume header)")
     parser.add_argument('-o','--output',
             type = argparse.FileType('wb'),
             help = "File to save figure")
@@ -85,9 +85,9 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    plotSimNUsr(args.inputOverlap,args.output,args.title,args.log)
+    plotSimNUsr(args.inputHashsim,args.output,args.title,args.log)
 
-    args.inputOverlap.close()
+    args.inputHashsim.close()
     args.output.close()
 
 if __name__ == '__main__':
