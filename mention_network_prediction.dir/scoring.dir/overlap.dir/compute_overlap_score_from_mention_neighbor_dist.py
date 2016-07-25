@@ -1,5 +1,5 @@
 # *-* encoding: utf-8 *-*
-import argparse,os,sys,csv,random
+import argparse,os,sys,csv,random,subprocess
 
 debug=1
 
@@ -42,8 +42,11 @@ def computeOverlap(dneighbors,fileout):
     counterU = 0
     counterC = 0
 
-    writer = csv.writer(fileout,delimiter=',',lineterminator=os.linesep)
-    writer.writerow(['user1','user2','overlap'])
+    print("gzip -c >",fileout)
+
+    p = subprocess.Popen("gzip -c > "+fileout,shell=True,stdin=subprocess.PIPE)
+
+    p.stdin.write('user1,user2,overlap\n'.encode('utf-8'))
 
 
     nUsers = len(dneighbors.keys())
@@ -74,10 +77,12 @@ def computeOverlap(dneighbors,fileout):
                 aL3 = dneighbors[u3]#.copy()
 
                 o13 = getOverlap(u1,u3,aL1,aL3)
-                writer.writerow([u1,u3,o13])
+                s = str(u1)+','+str(u3)+','+str(o13)+'\n'
+                p.stdin.write(s.encode('utf-8'))
                 counterC+=1
                 if counterC % 100000 ==0 :
                     print(str(counterC)+' overlaps computed')
+    p.stdin.close()
 
 def getOverlap(user1,user2,list1,list2):
         #list1.append(user2)
@@ -107,7 +112,7 @@ def main():
             required=True,
             help="List of mentions training, csvfile")
     parser.add_argument('-oo','--outputOverlap',
-            type=argparse.FileType('w'),
+            type=str,
             required=True,
             help="Output file, overlap for non neighbors")
 
@@ -122,7 +127,6 @@ def main():
     computeOverlap(d,args.outputOverlap)
 
     args.trainingMentions.close()
-    args.outputOverlap.close()
 
 if __name__ == '__main__':
     main()

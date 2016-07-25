@@ -1,9 +1,15 @@
 # *-* encoding: utf-8 *-*
-import argparse,os,sys,csv,random
+import argparse,os,sys,csv,random,subprocess
 
 debug=1
 
-def create_neighbor_vectors(listNeighbors,fileoutVectors):
+def create_neighbor_vectors(listNeighbors,fileoutVectors=None):
+
+    if fileoutVectors != None:
+        p = subprocess.Popen("gzip -c > "+fileoutVectors,shell=True,stdin=subprocess.PIPE)
+    else:
+        p = None
+
 
     counter_line=0
 
@@ -33,12 +39,19 @@ def create_neighbor_vectors(listNeighbors,fileoutVectors):
         else:
             d_out[mid].append(uid)
 
-    writer = csv.writer(fileoutVectors,delimiter=',',lineterminator=os.linesep)
     d_out2 = {}
     for e in d_out:
         d_out2[e] = list(set(d_out[e]))
-        writer.writerow([e]+d_out[e])
+
+        if p != None:
+            s1=str(e)
+            for n in d_out2[e]:
+                s1+=','+str(n)
+            s1+='\n'
+            p.stdin.write(s1.encode('utf-8'))
     del d_out
+    if p != None:
+        p.stdin.close()
     return d_out2
 
 def computeOverlap(dneighbors,fileMentions,fileUsers,fileout):
@@ -46,6 +59,7 @@ def computeOverlap(dneighbors,fileMentions,fileUsers,fileout):
         fT_name = 'skipped_entries_'+str(random.randint(0,100000))+'.csv'
         print('Skipped entries stored in',fT_name)
         fileTemp = open(fT_name,'w')
+    p = subprocess.Popen("gzip -c > "+fileout,shell=True,stdin=subprocess.PIPE)
     counterM = 0
     counter_sk = 0
     counter_read = 0
@@ -55,8 +69,7 @@ def computeOverlap(dneighbors,fileMentions,fileUsers,fileout):
     
     listUsers = [int(user.strip()) for user in fileUsers.readlines()]
 
-    writer = csv.writer(fileout,delimiter=',',lineterminator=os.linesep)
-    writer.writerow(['user1','user2','overlap'])
+    p.stdin.write('user1,user2,overlap\n'.encode('utf-8'))
 
     for line in fileMentions.readlines():
         counter_read += 1
@@ -93,7 +106,7 @@ def computeOverlap(dneighbors,fileMentions,fileUsers,fileout):
 #                print('Actually it is in')
 #            input('Type enter to continue')
 #
-            writer.writerow([uid,mid,0])
+            p.stdin.write(str(uid)+','+str(mid)+',0\n'.encode('utf-8'))
             if debug > 1:
                 fileTemp.write(str(uid)+','+str(mid)+',-1\n')
             counter_sk += 1
@@ -102,7 +115,7 @@ def computeOverlap(dneighbors,fileMentions,fileUsers,fileout):
         try:
             mu = dneighbors[mid]#.copy()
         except KeyError:
-            writer.writerow([uid,mid,0])
+            p.stdin.write(str(uid)+','+str(mid)+',0\n'.encode('utf-8'))
             if debug > 1:
                 fileTemp.write(str(uid)+','+str(mid)+',-2\n')
             counter_sk += 1
@@ -133,7 +146,8 @@ def computeOverlap(dneighbors,fileMentions,fileUsers,fileout):
             print('Number of common neighbors',nij)
             sys.exit(1)
 
-        writer.writerow([uid,mid,overl])
+        s = str(uid)+','+str(mid)+','+str(overl)+'\n'
+        p.stdin.write(s.encode('utf-8'))
         counterM += 1
 
     if debug > 0:
@@ -142,17 +156,19 @@ def computeOverlap(dneighbors,fileMentions,fileUsers,fileout):
         print(counterM,'overlaps computed')
         print(counter_sk,'skipped for no entries (',float(counter_sk)/float(counterM),'%)')
         print(counter_existing,'skipped for already present in training mention network')
+    p.stdin.close()
     return counterM
 
 def computeOverlapRandom(dneighbors,nMentions,listUsers,fileout):
+    p = subprocess.Popen("gzip -c > "+fileout,shell=True,stdin=subprocess.PIPE)
     counter = 0
 
     thr = int(nMentions/100)+1
 
     perc = 0
 
-    writer = csv.writer(fileout,delimiter=',',lineterminator=os.linesep)
-    writer.writerow(['uid','mid','overlap'])
+    s = 'uid,mid,overlap\n'
+    p.stdin.write(s.encode('utf-8'))
 
     lUsers = [int(user.strip()) for user in listUsers.readlines()]
 
@@ -175,14 +191,16 @@ def computeOverlapRandom(dneighbors,nMentions,listUsers,fileout):
         try:
             nu = dneighbors[uid].copy()
         except KeyError:
-            writer.writerow([uid,mid,0])
+            s = str(uid)+','+str(mid)+',0\n'
+            p.stdin.write(s.encode('utf-8'))
             counter+=1
             continue
 
         try:
             mu = dneighbors[mid].copy()
         except KeyError:
-            writer.writerow([uid,mid,0])
+            s = str(uid)+','+str(mid)+',0\n'
+            p.stdin.write(s.encode('utf-8'))
             counter += 1
             continue
         if (mid in nu) or (uid in mu):
@@ -207,8 +225,10 @@ def computeOverlapRandom(dneighbors,nMentions,listUsers,fileout):
             print('Number of common neighbors',nij)
             sys.exit(1)
 
-        writer.writerow([uid,mid,overl])
+        s = str(uid)+','+str(mid)+','+str(overl)+'\n'
+        p.stdin.write(s.encode('utf-8'))
         counter+=1
+    p.stdin.close()
 
 
 def main():
@@ -226,19 +246,21 @@ def main():
             required=True,
             help="List of users observed so far")
     parser.add_argument('-on','--outputOverlapNeighbor',
-            type=argparse.FileType('w'),
+            type=str,
             required=True,
             help="Output file, overlap for neighbors")
     parser.add_argument('-or','--outputOverlapRandom',
-            type=argparse.FileType('w'),
+            type=str,
             required=True,
             help="Output file, overlap for random nodes")
     parser.add_argument('-ov','--outputAdjVectors',
-            type = argparse.FileType('w'),
-            required=True,
-            help="Csv file storing each user adjacency vecors")
+            type = str,
+            required=False,
+            default=None,
+            help="File storing each user adjacency vecors [OPTIONAL]")
 
     args = parser.parse_args()
+
 
     if len(sys.argv) == 1:
         parser.print_help()
