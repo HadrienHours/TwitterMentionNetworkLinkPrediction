@@ -2,7 +2,7 @@
 
 NARGS=4
 
-debug=2
+debug=1
 
 if [ $# -ne $NARGS ]
 then

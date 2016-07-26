@@ -157,9 +157,9 @@ def computeOverlap(dneighbors,fileMentions,fileUsers,fileout):
         print(counter_sk,'skipped for no entries (',float(counter_sk)/float(counterM),'%)')
         print(counter_existing,'skipped for already present in training mention network')
     p.stdin.close()
-    return counterM
+    return counterM,listUsers 
 
-def computeOverlapRandom(dneighbors,nMentions,listUsers,fileout):
+def computeOverlapRandom(dneighbors,nMentions,lUsers,fileout):
     p = subprocess.Popen("gzip -c > "+fileout,shell=True,stdin=subprocess.PIPE)
     counter = 0
 
@@ -169,8 +169,6 @@ def computeOverlapRandom(dneighbors,nMentions,listUsers,fileout):
 
     s = 'uid,mid,overlap\n'
     p.stdin.write(s.encode('utf-8'))
-
-    lUsers = [int(user.strip()) for user in listUsers.readlines()]
 
     nUsers = len(lUsers)-1
 
@@ -267,9 +265,8 @@ def main():
         sys.exit(1)
 
     d = create_neighbor_vectors(args.trainingMentions,args.outputAdjVectors)
-    nc = computeOverlap(d,args.testingMentions,args.listUsers,args.outputOverlapNeighbor)
-    args.listUsers.seek(0)
-    computeOverlapRandom(d,nc,args.listUsers,args.outputOverlapRandom)
+    nc,lUsers = computeOverlap(d,args.testingMentions,args.listUsers,args.outputOverlapNeighbor)
+    computeOverlapRandom(d,nc,lUsers,args.outputOverlapRandom)
 
     args.trainingMentions.close()
     args.testingMentions.close()
