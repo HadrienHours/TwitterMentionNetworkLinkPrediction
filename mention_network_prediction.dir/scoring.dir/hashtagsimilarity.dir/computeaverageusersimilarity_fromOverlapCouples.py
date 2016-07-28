@@ -74,6 +74,7 @@ def main():
             help="File containing the list of user couples in format <uid1,uid2>")
     parser.add_argument('-o','--outputFile',
             type=argparse.FileType('w'),
+            default=sys.stdout,
             help="Output file with similarity for each couple of users not already present in Mention Newtork")
 
     args = parser.parse_args()

@@ -187,7 +187,7 @@ def computeOverlapRandom(dneighbors,nMentions,lUsers,fileout):
         mid = lUsers[id2]
 
         try:
-            nu = dneighbors[uid].copy()
+            nu = dneighbors[uid]#.copy()
         except KeyError:
             s = str(uid)+','+str(mid)+',0\n'
             p.stdin.write(s.encode('utf-8'))
@@ -195,7 +195,7 @@ def computeOverlapRandom(dneighbors,nMentions,lUsers,fileout):
             continue
 
         try:
-            mu = dneighbors[mid].copy()
+            mu = dneighbors[mid]#.copy()
         except KeyError:
             s = str(uid)+','+str(mid)+',0\n'
             p.stdin.write(s.encode('utf-8'))
@@ -204,12 +204,9 @@ def computeOverlapRandom(dneighbors,nMentions,lUsers,fileout):
         if (mid in nu) or (uid in mu):
             continue
 
-        nu.append(mid)
-        mu.append(uid)
-
         nij = len([n1 for n1 in nu if n1 in mu])
-        ki = len(nu)
-        kj = len(mu)
+        ki = len(nu)+1
+        kj = len(mu)+1
 
         try:
             if nij == 0 and ki == kj == 1:

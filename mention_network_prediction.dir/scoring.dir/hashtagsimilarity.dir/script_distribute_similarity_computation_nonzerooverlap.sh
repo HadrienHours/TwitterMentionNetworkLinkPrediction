@@ -1,10 +1,10 @@
 #!/bin/bash
 
-NARGS=5
+NARGS=6
 
 if [ $# -ne $NARGS ]
 then
-    echo -e "\n\t$(tput bold)Usage of $(basename $0):<dircatvectors><dirusercouples><dirout><listmachines><numberSessions>\n"
+    echo -e "\n\t$(tput bold)Usage of $(basename $0):<dircatvectors><dirusercouples><dirout><login><listmachines><numberSessions>\n"
     tput sgr0
     echo "Cat vectors:<uid,nCat1,...,nCatK"
     echo "User couples:<u1,u2>"
@@ -17,15 +17,16 @@ debug=0
 dircat=$1
 dirm=$2
 dirout=$3
-listm=$4
-nbSessions=$5
+userName=$4
+listm=$5
+nbSessions=$6
 
 if [ ! -d $dirout ]  && [ $debug -eq 0 ]
 then
     mkdir -p $dirout
 fi
 
-listmacs=$(echo $listm | sed -re 's/\.tsv//1')_${RANDOM}_tmp.csv
+listmacs=$(echo $listm | sed -re 's/\.tsv//1')_${RANDOM}_tmp.tsv
 
 if [ -f $listmacs ]
 then
@@ -38,7 +39,7 @@ then
     while read line
     do
         mac=$(echo $line | awk '{print $1}')
-        res=$(ssh -n -o BatchMode=yes hhours@$mac "uname -n")
+        res=$(ssh -n -o BatchMode=yes $userName@$mac "uname -n")
         if [ -z $res ]
         then
             echo "machine $mac seem not reachable, removed"
@@ -52,15 +53,15 @@ else
 fi
 
 cwdt=`pwd`
-CWD=$(echo $cwdt | sed -re 's/\/media\/hhours\//\/datastore\/complexnet\/test_hours\//1')
-DIROUT=$(echo $dirout | sed -re 's/\/media\/hhours\//\/datastore\/complexnet\/test_hours\//1')
-DIRM=$(echo $dirm | sed -re 's/\/media\/hhours\//\/datastore\/complexnet\/test_hours\//1')
-DIRCAT=$(echo $dircat | sed -re 's/\/media\/hhours\//\/datastore\/complexnet\/test_hours\//1')
+CWD=$(echo $cwdt | sed -re "s/\/media\/$userName\//\/datastore\/complexnet\/test_hours\//1")
+DIROUT=$(echo $dirout | sed -re "s/\/media\/$userName\//\/datastore\/complexnet\/test_hours\//1")
+DIRM=$(echo $dirm | sed -re "s/\/media\/$userName\//\/datastore\/complexnet\/test_hours\//1")
+DIRCAT=$(echo $dircat | sed -re "s/\/media\/$userName\//\/datastore\/complexnet\/test_hours\//1")
 
-for file in $dirm/*.csv
+for file in $dirm/*.tgz
 do
     #find corresponding cat vector file
-    periodtrain=$(basename $file | egrep -o "[0-9]{10}")
+    periodtrain=$(basename $file | egrep -o "[0-9]{10}[_\-][0-9]{10}")
     if [ -z $periodtrain ]
     then
         echo "No training period found in $file"
@@ -82,12 +83,12 @@ do
         do
             mac=$(echo $line | awk '{print $1}')
             env=$(echo $line | awk '{print $2}')
-            vl=$(ssh -o BatchMode=yes -n hhours@$mac "uname -n")
+            vl=$(ssh -o BatchMode=yes -n $userName@$mac "uname -n")
             if [ -z $vl ]
             then
                 continue
             fi
-            nsc=$(ssh -n hhours@$mac "screen -ls | egrep -i \"socket[s]* in /var\"" | awk '{print $1}')
+            nsc=$(ssh -n $userName@$mac "screen -ls | egrep -i \"socket[s]* in /var\"" | awk '{print $1}')
             if [ -z $nsc ] || [ $nsc -lt $nbSessions ]
             then
                 flag_f=1
@@ -104,17 +105,20 @@ do
     #rename output/input for remote machines
     FILECAT=$DIRCAT/$(basename $file2)
     FILEM=$DIRM/$(basename $file)
-    FILEOUT=$DIROUT/SIMILARITY_USER_COUPLE_NON_ZERO_OVERLAP_TRAINING_PERIOD_ENDING_${periodtrain}.csv
+    FILEOUT=$DIROUT/SIMILARITY_USER_COUPLE_NON_ZERO_OVERLAP_TRAINING_PERIOD_ENDING_${periodtrain}.tgz
     if [ $debug -gt 1 ]
     then
-        echo "ssh hhours@$mac \"(cd $CWD && screen -d -m bash -c 'source /datastore/complexnet/test_hours/$env/bin/activate; python computeaverageusersimilarity_fromOverlapCouples.py -c $FILECAT -m $FILEM -o $FILEOUT')\""
+        echo "ssh $userName@$mac \"(cd $CWD && screen -d -m bash -c 'source /datastore/complexnet/test_hours/$env/bin/activate; python computeaverageusersimilarity_fromOverlapCouples.py -c <(zcat $FILECAT) -m <(zcat $FILEM) | gzip > $FILEOUT')\""
         echo -e "#######################################################################################################################################################################\n\n"
     else
-        echo -e "\n################################"
-        echo "# On $mac ($env) at $(date)      #"
-        echo -e "################################"
-        echo "cmd launched python computeaverageusersimilarity_fromOverlapCouples.py -c $FILECAT -m $FILEM -o $FILEOUT"
-        ssh hhours@$mac "(cd $CWD && screen -d -m bash -c 'source /datastore/complexnet/test_hours/$env/bin/activate; python computeaverageusersimilarity_fromOverlapCouples.py -c $FILECAT -m $FILEM -o $FILEOUT')"
+        if [ $debug -gt 1 ]
+        then
+            echo -e "\n################################"
+            echo "# On $mac ($env) at $(date)      #"
+            echo -e "################################"
+            echo "cmd launched python computeaverageusersimilarity_fromOverlapCouples.py -c $FILECAT -m $FILEM -o $FILEOUT"
+        fi
+        ssh $userName@$mac "(cd $CWD && screen -d -m bash -c 'source /datastore/complexnet/test_hours/$env/bin/activate; python computeaverageusersimilarity_fromOverlapCouples.py -c <(zcat $FILECAT) -m <(zcat $FILEM) | gzip $FILEOUT')"
     fi
 done
 

@@ -21,8 +21,9 @@ def create_neighbor_vectors(listNeighbors,fileoutVectors=None):
         if counter_line % 100000 == 0:
             print('Treating line number:',counter_line)
         try:
-            uid = int(l.strip().split(',')[0])
-            mid = int(l.strip().split(',')[1])
+            listv = [int(v) for v in l.strip().split(',')]
+            uid = listv[0]
+            mid = listv[1]
         except ValueError:
             if debug > 0:
                 print('Following line had to be skipped (format)')
@@ -79,8 +80,9 @@ def computeOverlap(dneighbors,fileMentions,fileUsers,fileout):
             print(counterM,'overlaps computed')
 
         try:
-            uid=int(line.strip().split(',')[0])
-            mid=int(line.strip().split(',')[1])
+            listv = [int(v) for v in line.strip().split(',')]
+            uid=listv[0]
+            mid=listv[1]
         except ValueError:
             if debug > 0:
                 print('Following line skipped (wrong int format)')
@@ -136,7 +138,9 @@ def computeOverlap(dneighbors,fileMentions,fileUsers,fileout):
         except ZeroDivisionError:
             print('Zero division error, program will exit')
             print('User id',uid,'with',ki,'neighbors')
+            print('List neighbors',nu)
             print('Mention id',mid,'with',kj,'neighbors')
+            print('List neighbors',mu)
             print('Number of common neighbors',nij)
             sys.exit(1)
 
@@ -152,6 +156,7 @@ def computeOverlap(dneighbors,fileMentions,fileUsers,fileout):
     return counterM,listUsers 
 
 def computeOverlapRandom(dneighbors,nMentions,lUsers,fileout):
+    print('Start computing average overlap, picking randomly ',nMentions,' couples of users')
     writer = csv.writer(fileout,lineterminator=os.linesep,delimiter=",")
     counter = 0
 
@@ -178,27 +183,25 @@ def computeOverlapRandom(dneighbors,nMentions,lUsers,fileout):
         mid = lUsers[id2]
 
         try:
-            nu = dneighbors[uid].copy()
+            nu = dneighbors[uid]#.copy()
         except KeyError:
             writer.writerow([uid,mid,0])
             counter+=1
             continue
 
         try:
-            mu = dneighbors[mid].copy()
+            mu = dneighbors[mid]#.copy()
         except KeyError:
-            wrtier.writerow([uid,mid,0])
+            writer.writerow([uid,mid,0])
             counter += 1
             continue
         if (mid in nu) or (uid in mu):
             continue
 
-        nu.append(mid)
-        mu.append(uid)
 
         nij = len([n1 for n1 in nu if n1 in mu])
-        ki = len(nu)
-        kj = len(mu)
+        ki = len(nu)+1
+        kj = len(mu)+1
 
         try:
             if nij == 0 and ki == kj == 1:
