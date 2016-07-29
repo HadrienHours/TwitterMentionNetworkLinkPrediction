@@ -1,6 +1,8 @@
 # *-* encoding: utf-8 *-*
 import argparse,sys,os,csv
 
+verbose=1
+
 def extractMax(filein,fileout):
     writer = csv.writer(fileout,lineterminator=os.linesep,delimiter=",")
 
@@ -10,14 +12,20 @@ def extractMax(filein,fileout):
 
     for line in filein.readlines():
         listv=line.strip().split(',')
-        uid_t = int(listv[0])
-        mid_t = int(listv[1])
-        ovl_t = float(listv[2])
+        try:
+            uid_t = int(listv[0])
+            mid_t = int(listv[1])
+            ovl_t = float(listv[2])
+        except ValueError:
+            if verbose > 0:
+                print('Following line was skipped, wrong format')
+                print(line)
+            continue
 
         if uid == uid_t and mid == mid_t:
             ovl=max(ovl,ovl_t)
         else:
-            writer.write_row([uid,mid,ovl])
+            writer.writerow([uid,mid,ovl])
             uid=uid_t
             mid=mid_t
             ovl=ovl_t
@@ -41,6 +49,10 @@ def main():
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
+
+    global verbose
+    if args.output == sys.stdout:
+        verbose=0
 
     extractMax(args.input,args.output)
 

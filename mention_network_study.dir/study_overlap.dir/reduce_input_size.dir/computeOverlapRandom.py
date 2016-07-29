@@ -17,6 +17,7 @@ def computeOverlap(dictVectors,listUserActivity,nMentions,fileout):
     counter_sk = 0
     counter_existing = 0
     counter_mentions = 0
+    counter_tried = 0
 
     writer.writerow(['user1','user2','overlap'])
 
@@ -36,7 +37,7 @@ def computeOverlap(dictVectors,listUserActivity,nMentions,fileout):
         id1=random.randint(0,nUsers)
         id2=random.randint(0,nUsers)
         while id2 == id1:
-            id2 = random.randinit(0,nUsers)
+            id2 = random.randint(0,nUsers)
 
         uid = listUserActivity[id1]
         mid = listUserActivity[id2]
@@ -116,7 +117,7 @@ def main():
             type=argparse.FileType('r'),
             required=True,
             help="List of user observed during the training period")
-    parser.add_argument('-n','numberMentions',
+    parser.add_argument('-n','--numberMentions',
             type=int,
             required=True,
             help="Number of random mentions to compute")
@@ -136,12 +137,10 @@ def main():
         verbose=0
 
     dictVectors = createDictVectors(args.inputVector)
-    listMentions = [[int(el[0]),int(el[1])] for el in csv.reader(args.inputMentions,delimiter=",")]
     listUserActivity = [int(line.strip()) for line in args.inputUserActivity.readlines()]
     computeOverlap(dictVectors,listUserActivity,args.numberMentions,args.output)
 
     args.inputVector.close()
-    args.inputMentions.close()
     args.inputUserActivity.close()
     args.output.close()
 

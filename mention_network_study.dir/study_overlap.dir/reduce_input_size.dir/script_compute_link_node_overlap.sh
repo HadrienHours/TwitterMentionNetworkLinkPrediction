@@ -2,6 +2,8 @@
 
 NARGS=4
 
+debug=2
+
 if [ $# -ne $NARGS ]
 then
     echo -e "Use of \e[1m$(basename $0)\e[0m:<fileTrainingMentions><fileTestingMentions><fileUserActivity><dirOut>\n"
@@ -86,13 +88,15 @@ echo -e "\t\e[3mFinished computing neighbor overlap for period \e[1m[$trainPerio
 outNeighbor=$dirOut/OVERLAP_TRAINING_PERIOD_${trainPeriod}_TESTING_PERIOD_${testPeriod}_NEIGHBOR.tgz
 filein=$auxdir/LIST_ALL_OVERLAP_TESTING_PERIOD_${testPeriod}.tgz
 zcat $fNOv $f0Ov | grep -iv "id" | sort -t , -k1,1 -k2,2 | gzip -c > $filein
-python extractMaxOverlap.py -i <(zcat $filein) | gzip -c > $outNeighor
-echo -e "\t\e[3m Finished merging training mention and observed users overlap for testing period \e[1m$testPeriod\e[0m"
+python extractMaxOverlap.py -i <(zcat $filein) | gzip -c > $outNeighbor
+echo -e "\t\e[3mFinished merging training mention and observed users overlap for testing period \e[1m$testPeriod\e[0m"
 
 
 #Compute random overlap
 outRandom=$dirOut/OVERLAP_TRAINING_PERIOD_${trainPeriod}_TESTING_PERIOD_${testPeriod}_RANDOM.tgz
 nU=$(zcat $outNeighbor | wc -l | awk '{print $1}')
+    #header
+nU=$(( $nU-1 ))
 python computeOverlapRandom.py -i1 <(zcat $fileVect) -i2 <(zcat $listUserActivity) -n $nU | gzip -c > $outRandom
 echo -e "\t\e[1mFinished computing random overlap for period [$trainPeriod - $testPeriod]\e[0m"
 
