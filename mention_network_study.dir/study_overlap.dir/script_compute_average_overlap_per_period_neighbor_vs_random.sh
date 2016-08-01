@@ -34,9 +34,10 @@ do
     then
         echo "$counter/$nlines done"
     fi
+    #In case file is training,testing
     period=$(echo $line | cut -d , -f2)
-    fileNeighbor=$(ls $dirin | grep "$period" | grep -i "neighbor")
-    fileRandom=$(ls $dirin | grep "$period" | grep -i "random")
+    fileNeighbor=$(basename $(ls $dirin/*.tgz | grep "$period" | grep -i "neighbor"))
+    fileRandom=$(basename $(ls $dirin/*.tgz | grep "$period" | grep -i "random"))
 
     if [ -z $fileNeighbor ] || [ -z $fileRandom ]
     then
@@ -47,8 +48,8 @@ do
         continue
     fi
 
-    avgN=$(cat $dirin/$fileNeighbor | egrep -iv "id" | egrep -v ",-1$|,-2$" | awk -F , 'BEGIN{count=0;sum=0}{count+=1;sum+=$NF}END{print sum/count}')
-    avgR=$(cat $dirin/$fileRandom | egrep -iv "id" | awk -F , 'BEGIN{count=0;sum=0}{count+=1;sum+=$NF}END{print sum/count}')
-    nbUsers=$(wc -l $dirin/$fileRandom | awk '{print $1}')
+    avgN=$(zcat $dirin/$fileNeighbor | egrep -iv "id" | egrep -v ",-1$|,-2$" | awk -F , 'BEGIN{count=0;sum=0}{count+=1;sum+=$NF}END{print sum/count}')
+    avgR=$(zcat $dirin/$fileRandom | egrep -iv "id" | awk -F , 'BEGIN{count=0;sum=0}{count+=1;sum+=$NF}END{print sum/count}')
+    nbUsers=$(zcat $dirin/$fileRandom | wc -l | awk '{print $1}')
     echo "$period,$nbUsers,$avgN,$avgR" >> $fileout
 done < <(cat $listperiods)
