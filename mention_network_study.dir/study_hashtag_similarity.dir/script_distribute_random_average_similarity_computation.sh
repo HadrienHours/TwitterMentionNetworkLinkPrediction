@@ -21,7 +21,7 @@ user=$4
 listm=$5
 auxdir=$dirout/MENTIONSIMILARITY.dir
 
-if [ ! -d $auxdir ]  && [ $debug -eq 0 ]
+if [ ! -d $auxdir ]  && [ $debug -lt 2 ]
 then
     mkdir -p $auxdir
 fi

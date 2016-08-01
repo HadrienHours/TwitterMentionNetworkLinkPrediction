@@ -40,8 +40,8 @@ fTrS=$auxdir/TRAINING_MENTIONS_PERIOD_${trainPeriod}_SORTED.tgz
 fLU=$auxdir/LISTUSEROBSERVED_IN_TRAINING_PERIOD_${trainPeriod}_SORTED.tgz
 
 zcat $listTrainMention | egrep -iv "id" | cut -d , -f1-2 | tr , "\n" | sort | uniq | gzip -c > $fTrS
-zcat $listTestMention | egrep -iv "id" | sort -t , -k1,1 | gzip -c > $fTsS1
-zcat $listTestMention | egrep -iv "id" | sort -t , -k2,2 | gzip -c > $fTsS2
+zcat $listTestMention | egrep -iv "id" | cut -d , -f1-2 | sort -t , -k1,1 | gzip -c > $fTsS1
+zcat $listTestMention | egrep -iv "id" | cut -d , -f1-2 | sort -t , -k2,2 | gzip -c > $fTsS2
 zcat $listUserActivity | egrep -iv "id" | cut -d , -f1 | sort | uniq | gzip -c > $fLU
 echo -e "\t\e[3mFinished sorting mentions and user files for periods\e[0m \e[1m$trainPeriod / $testPeriod\e[0m"
 

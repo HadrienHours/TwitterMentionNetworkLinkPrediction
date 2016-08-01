@@ -96,7 +96,7 @@ def computeOverlap(dictVectors,fileMentions,listUserActivity,fileout):
 
 def createDictVectors(filein):
     d = {}
-    for line in csv.reader(filein):
+    for line in csv.reader(filein,delimiter=","):
         uid = int(line[0])
         neighbors = [int(el) for el in line[1:]]
         d[uid] = neighbors

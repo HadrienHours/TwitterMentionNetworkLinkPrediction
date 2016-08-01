@@ -1,14 +1,15 @@
 #!/bin/bash
 
-NARGS=6
+minNARGS=6
+maxNARGS=7
+debug=1
 
-debug=2
-
-if [ $# -ne $NARGS ]
+if [ $# -lt $minNARGS ] || [ $# -gt $maxNARGS ]
 then
-    echo -e "\n\t\e[1mUsage $(basename $0):<dirinputtraining_4weeks><dirinputtesting_2weeks><dir_users><dirout><login><listmachines>\e[0m\n"
+    echo -e "\n\t\e[1mUsage $(basename $0):<dirinputtraining_4weeks><dirinputtesting_2weeks><dir_users><dirout><login><listmachines>[<banlist>]\e[0m\n"
     echo "List period:<period in filename training,period in filename testing>"
     echo -e "List mechine (tsv):<name_machine\tenvrionment\tnScreens>"
+    echo -e "[Optional]: Ban list, training files not to process"
     exit 1
 fi
 
@@ -19,7 +20,10 @@ dirusers=$3
 dirout=$4
 userName=$5
 listm=$6
-nSessions=$7
+if [ $# -eq $maxNARGS ]
+then
+    listBanFiles=$7
+fi
 
 auxdir=$dirout/aux.dir
 
@@ -29,7 +33,7 @@ then
 fi
 
 #Test machines
-listmacs=$(echo $listm | sed -re 's/\.tsv//1')_${RANDOM}.csv
+listmacs=$(echo $listm | sed -re 's/\.tsv//1')_${RANDOM}.tsv
 
 if [ -f $listmacs ]
 then
@@ -65,6 +69,23 @@ CWD=$(echo $(pwd) | sed -re "s/\/media\/$userName/\/datastore\/complexnet\/test_
 
 for filetrn in $dirintrn/*.tgz
 do
+    if [ ! -z $listBanFiles ]
+    then
+        fin=$(basename $filetrn)
+        ban=$(cat $listBanFiles | grep $fin | wc -l | awk '{print $1}')
+        if [ $ban -gt 0 ]
+        then
+            if [ $debug -gt 0 ]
+            then
+                echo "File $fin discarded (in ban file)"
+                if [ $debug -gt 2 ]
+                then
+                    read input
+                fi
+            fi
+            continue
+        fi
+    fi
     periodtrn=$(basename $filetrn | egrep -o "[0-9]{10}_[0-9]{10}")
     endTrn=$(echo $periodtrn | cut -d _ -f2)
     filetst=$(ls $dirintst/*.tgz | egrep "${endTrn}_")

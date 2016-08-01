@@ -45,7 +45,7 @@ def create_neighbor_vectors(listNeighbors,fileoutVectors=None):
         d_out2[e] = list(set(d_out[e]))
 
         if writer != None:
-            writer.writerow(e+d_out2[e])
+            writer.writerow([e]+d_out2[e])
     del d_out
     return d_out2
 

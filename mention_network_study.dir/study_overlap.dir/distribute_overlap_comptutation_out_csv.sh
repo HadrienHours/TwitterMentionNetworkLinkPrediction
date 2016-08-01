@@ -28,7 +28,7 @@ then
 fi
 
 #Test machines
-listmacs=$(echo $listm | sed -re 's/\.tsv//1')_${RANDOM}.csv
+listmacs=$(echo $listm | sed -re 's/\.tsv//1')_${RANDOM}.tsv
 
 if [ -f $listmacs ]
 then
@@ -65,9 +65,25 @@ CWD=$(echo $(pwd) | sed -re "s/\/media\/$userName/\/datastore\/complexnet\/test_
 for filetrn in $dirintrn/*.tgz
 do
     periodtrn=$(basename $filetrn | egrep -o "[0-9]{10}_[0-9]{10}")
+    if [ $debug -gt 2 ]
+    then
+        echo "Training period $periodtrn"
+    fi
     endTrn=$(echo $periodtrn | cut -d _ -f2)
-    filetst=$(ls $dirintst/*.tgz | egrep "${endTrn}_")
+    if [ $debug -gt 2 ]
+    then
+        echo "End training period is $endTrn"
+    fi
+    filetst=$(ls $dirintst/*.tgz | egrep "${endTrn}_[0-9]{10}")
+    if [ $debug -gt 2 ]
+    then
+        echo -e "File testing:\t$filetst"
+    fi
     fileusr=$(ls $dirusers/*.tgz | egrep "${endTrn}")
+    if [ $debug -gt 2 ]
+    then
+        echo -e "User file:\t$fileusr"
+    fi
     if [ -z $filetst ] || [ -z $fileusr ]
     then
         echo "Could not find files in $dirusers and $dirintst for file $filetrn, period $periodtrn (end period $endTrn), skipped"
@@ -79,6 +95,11 @@ do
     then
         echo "No testing period found in the filename $fileTst, period $periodtrn skipped"
         continue
+    else
+        if [ $debug -gt 2 ]
+        then
+            echo -e "Period test \e[1m$periodtst\e[0m"
+        fi
     fi
 
     FILETRN=$DIRINTRN/$(basename $filetrn)
