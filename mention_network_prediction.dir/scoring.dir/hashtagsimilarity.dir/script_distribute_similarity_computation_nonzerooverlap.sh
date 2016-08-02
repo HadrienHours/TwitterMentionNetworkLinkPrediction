@@ -12,7 +12,7 @@ then
     exit 1
 fi
 
-debug=0
+debug=1
 
 dircat=$1
 dirm=$2
@@ -33,7 +33,7 @@ then
 fi
 touch $listmacs
 
-if [ $debug -eq 0 ]
+if [ $debug -lt 2 ]
 then
     while read line
     do
@@ -61,12 +61,14 @@ for file in $dirm/*.tgz
 do
     #find corresponding cat vector file
     periodtrain=$(basename $file | egrep -o "[0-9]{10}[_\-]{1}[0-9]{10}")
+    period1=$(echo "$periodtrain" | egrep -o "^[0-9]{10}")
+    period2=$(echo "$periodtrain" | egrep -o "[0-9]{10}$")
     if [ -z $periodtrain ]
     then
         echo "No training period found in $file"
         continue
     fi
-    file2=$(basename $(ls $dircat/*.tgz | grep "$periodtrain"))
+    file2=$(basename $(ls $dircat/*.tgz | egrep "$period1[_-]{1}$period2"))
 
     if [ -z $file2 ]
     then
@@ -111,14 +113,14 @@ do
         echo "ssh $userName@$mac \"(cd $CWD && screen -d -m bash -c 'source /datastore/complexnet/test_hours/$env/bin/activate; python computeaverageusersimilarity_fromOverlapCouples.py -c <(zcat $FILECAT) -m <(zcat $FILEM) | gzip > $FILEOUT')\""
         echo -e "#######################################################################################################################################################################\n\n"
     else
-        if [ $debug -gt 1 ]
+        if [ $debug -gt 0 ]
         then
             echo -e "\n################################"
             echo "# On $mac ($env) at $(date)      #"
             echo -e "################################"
             echo "cmd launched python computeaverageusersimilarity_fromOverlapCouples.py -c $FILECAT -m $FILEM -o $FILEOUT"
         fi
-        ssh $userName@$mac "(cd $CWD && screen -d -m bash -c 'source /datastore/complexnet/test_hours/$env/bin/activate; python computeaverageusersimilarity_fromOverlapCouples.py -c <(zcat $FILECAT) -m <(zcat $FILEM) | gzip $FILEOUT')"
+        ssh $userName@$mac "(cd $CWD && screen -d -m bash -c 'source /datastore/complexnet/test_hours/$env/bin/activate; python computeaverageusersimilarity_fromOverlapCouples.py -c <(zcat $FILECAT) -m <(zcat $FILEM) | gzip > $FILEOUT')"
     fi
 done
 

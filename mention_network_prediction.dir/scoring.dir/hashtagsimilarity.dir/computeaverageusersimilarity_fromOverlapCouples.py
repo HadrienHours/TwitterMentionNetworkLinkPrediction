@@ -16,16 +16,16 @@ def createVectorList(filein):
 
 def computeUserSimilarity(listMentions,listCatVectors,fileout):
 
-    nV=0
-    for line in listMentions.readlines():
-        nV+=1
+    if verbose > 0:
+        nV=0
+        for line in listMentions.readlines():
+            nV+=1
+        listMentions.seek(0)
+        thr=int(nV/100)+1
+        perc=0
 
-    listMentions.seek(0)
-
-    thr=int(nV/100)+1
     counterU=0
     counterS=0
-    perc=0
 
 
     fileout.write('user1,user2,cosineSimilarity\n')
@@ -33,7 +33,7 @@ def computeUserSimilarity(listMentions,listCatVectors,fileout):
 
     for line in listMentions.readlines():
         counterU+=1
-        if counterU % thr == 0 and verbose > 0:
+        if verbose > 0 and counterU % thr == 0:
             perc+=1
             print(str(perc)+'% mentions treated, ('+str(counterU)+'/'+str(nV)+')')
             print(str(counterS)+' entries skipped for absence of categories for (at least) one user')
