@@ -4,15 +4,16 @@ NARGS=6
 
 if [ $# -ne $NARGS ]
 then
-    echo -e "\n\t$(tput bold)Usage of $(basename $0):<dirOverlapHashSimPerTraininPeriod><weightOverlap><weightHashsim>i<dirOut><login><listmachines>\n"
+    echo -e "\n\t$(tput bold)Usage of $(basename $0):<dirOverlapHashSimPerTraininPeriod><weightOverlap><weightHashsim><dirOut><login><listmachines>\n"
     tput sgr0
-    echo "Overlap dir, tgzfiles, <uid,mid,overl>"
-    echo "Hashsim dir, tgzfiles, <uid,mid,overl>"
+    echo "OverlapHashsim dir, tgzfiles, <uid,mid,overl,hashsim>"
+    echo "weightOverlap (<1.0)"
+    echo "weightHashsim (<1.0, = 1.0 - weightOverlap)"
     echo "listmachine: <machinename  virtualenv  numberSessions>"
     exit 1
 fi
 
-debug=2
+debug=1
 
 dirInput=$1
 weightO=$2
@@ -29,7 +30,7 @@ then
 fi
 
 
-if [ ! -d $dirout ]  && [ $debug -eq 0 ]
+if [ ! -d $dirout ]  && [ $debug -lt 2 ]
 then
     mkdir -p $dirout
 fi
