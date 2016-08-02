@@ -16,9 +16,6 @@ def createVectorList(filein):
 
 def computeUserSimilarity(listMentions,listCatVectors,fileout):
 
-    #remove header
-    listMentions.readline()
-
     nV=0
     for line in listMentions.readlines():
         nV+=1
@@ -33,19 +30,23 @@ def computeUserSimilarity(listMentions,listCatVectors,fileout):
 
     fileout.write('user1,user2,cosineSimilarity\n')
 
-    #remove header
-    listMentions.readline()
 
     for line in listMentions.readlines():
         counterU+=1
-        if counterU % thr == 0:
+        if counterU % thr == 0 and verbose > 0:
             perc+=1
             print(str(perc)+'% mentions treated, ('+str(counterU)+'/'+str(nV)+')')
             print(str(counterS)+' entries skipped for absence of categories for (at least) one user')
 
         listU = line.strip().split(',')
-        u1 = int(listU[0])
-        u2 = int(listU[1])
+        try:
+            u1 = int(listU[0])
+            u2 = int(listU[1])
+        except ValueError:
+            if verbose > 0:
+                print("Following line skipped (wrong format)")
+                print(line)
+            continue
         
 
         try:
@@ -83,9 +84,15 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    print('Building category list')
+    global verbose
+    if args.outputFile == sys.stdout:
+        verbose = 0
+
+    if verbose > 0:
+        print('Building category list')
     listCatVectors = createVectorList(args.listCatVectors)
-    print('Start computing user similarity')
+    if verbose > 0:
+        print('Start computing user similarity')
     computeUserSimilarity(args.listMentions,listCatVectors,args.outputFile)
 
     args.listCatVectors.close()

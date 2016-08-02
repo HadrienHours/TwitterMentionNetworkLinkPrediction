@@ -1,14 +1,14 @@
 #!/bin/bash
 
-NARGS=6
+NARGS=5
 
 if [ $# -ne $NARGS ]
 then
-    echo -e "\n\t$(tput bold)Usage of $(basename $0):<dircatvectors><dirusercouples><dirout><login><listmachines><numberSessions>\n"
+    echo -e "\n\t$(tput bold)Usage of $(basename $0):<dircatvectors><dirusercouples><dirout><login><listmachines>\n"
     tput sgr0
     echo "Cat vectors:<uid,nCat1,...,nCatK"
     echo "User couples:<u1,u2>"
-    echo "listmachine: <machinename  virtualenv>"
+    echo "listmachine: <machinename  virtualenv  numberSessions>"
     exit 1
 fi
 
@@ -19,7 +19,6 @@ dirm=$2
 dirout=$3
 userName=$4
 listm=$5
-nbSessions=$6
 
 if [ ! -d $dirout ]  && [ $debug -eq 0 ]
 then
@@ -61,13 +60,13 @@ DIRCAT=$(echo $dircat | sed -re "s/\/media\/$userName\//\/datastore\/complexnet\
 for file in $dirm/*.tgz
 do
     #find corresponding cat vector file
-    periodtrain=$(basename $file | egrep -o "[0-9]{10}[_\-][0-9]{10}")
+    periodtrain=$(basename $file | egrep -o "[0-9]{10}[_\-]{1}[0-9]{10}")
     if [ -z $periodtrain ]
     then
         echo "No training period found in $file"
         continue
     fi
-    file2=$(ls $dircat | grep "$periodtrain")
+    file2=$(basename $(ls $dircat/*.tgz | grep "$periodtrain"))
 
     if [ -z $file2 ]
     then
@@ -83,13 +82,14 @@ do
         do
             mac=$(echo $line | awk '{print $1}')
             env=$(echo $line | awk '{print $2}')
+            nS=$(echo $line | awk '{print $3}')
             vl=$(ssh -o BatchMode=yes -n $userName@$mac "uname -n")
             if [ -z $vl ]
             then
                 continue
             fi
             nsc=$(ssh -n $userName@$mac "screen -ls | egrep -i \"socket[s]* in /var\"" | awk '{print $1}')
-            if [ -z $nsc ] || [ $nsc -lt $nbSessions ]
+            if [ -z $nsc ] || [ $nsc -lt $nS ]
             then
                 flag_f=1
                 break
@@ -97,13 +97,13 @@ do
         done < <(cat $listmacs)
         if [ $flag_f -eq 0 ]
         then
-            echo "All machines have been asigned $nbSessions jobs, waiting 1 min before polling again"
+            echo "All machines have been asigned their maximum number of jobs, waiting 1 min before polling again"
             sleep 60
         fi
     done
 
     #rename output/input for remote machines
-    FILECAT=$DIRCAT/$(basename $file2)
+    FILECAT=$DIRCAT/$file2
     FILEM=$DIRM/$(basename $file)
     FILEOUT=$DIROUT/SIMILARITY_USER_COUPLE_NON_ZERO_OVERLAP_TRAINING_PERIOD_ENDING_${periodtrain}.tgz
     if [ $debug -gt 1 ]
