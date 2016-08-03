@@ -45,7 +45,7 @@ def main():
             help="File with candidate values <period,threshold,precision,recall,harmonicMean>")
     parser.add_argument('-o','--output',
             type=argparse.FileType('w'),
-            required=True,
+            default=sys.stdout,
             help="output file with % improvement,  <precision,recall,harmonicMean>")
 
     args = parser.parse_args()

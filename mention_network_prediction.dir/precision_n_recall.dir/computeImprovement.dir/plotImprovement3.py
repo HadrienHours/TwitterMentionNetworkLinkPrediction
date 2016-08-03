@@ -2,13 +2,15 @@
 import argparse,csv,sys,os
 import matplotlib.pyplot as plt
 
-def plotImprovement(listSim1,listSim2,listSim3,lab1,lab2,lab3,fileout):
+def plotImprovement(listSim1,listSim2,listSim3,lab1,lab2,lab3,fileout,logf):
     X = range(len(listSim1))
     
     plt.figure()
     plt.plot(X,listSim1,'g--',lw=1.5,marker='o',markersize=12,label=lab1)
     plt.plot(X,listSim2,'r--',lw=1.5,marker='*',markersize=12,label=lab2)
     plt.plot(X,listSim3,'b--',lw=1.5,marker='^',markersize=12,label=lab3)
+    if logf:
+        plt.yscale('log')
     plt.grid()
     plt.legend(loc='upper right')
     plt.draw()
@@ -57,6 +59,8 @@ def main():
             type=argparse.FileType('wb'),
             required=True,
             help="Output file")
+    parser.add_argument('--log',dest='logf',action='store_true',help='set yscale in log')
+    parser.set_defaults(logf=False)
 
     args = parser.parse_args()
 
@@ -68,7 +72,7 @@ def main():
     list2 = createList(args.input2,args.dim)
     list3 = createList(args.input3,args.dim)
 
-    plotImprovement(list1,list2,list3,args.label1,args.label2,args.label3,args.output)
+    plotImprovement(list1,list2,list3,args.label1,args.label2,args.label3,args.output,args.logf)
 
     args.input1.close()
     args.input2.close()
