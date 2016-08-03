@@ -7,8 +7,6 @@ then
     echo -e "\n\t$(tput bold)Usage of $(basename $0):<dirOverlapHashSimPerTraininPeriod><dirTestingMentions><dirOut><login><listmachines>\n"
     tput sgr0
     echo "OverlapHashsim dir, tgzfiles, <uid,mid,overl,hashsim>"
-    echo "weightOverlap (<1.0)"
-    echo "weightHashsim (<1.0, = 1.0 - weightOverlap)"
     echo "listmachine: <machinename  virtualenv  numberSessions>"
     exit 1
 fi

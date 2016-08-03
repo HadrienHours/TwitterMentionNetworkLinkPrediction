@@ -20,7 +20,7 @@ then
     fi
 fi
 
-echo "period,threshold,precision,overlap" > $fileout
+echo "period,threshold,precision,recall" > $fileout
 
 for l in $dirInput/*.csv
 do

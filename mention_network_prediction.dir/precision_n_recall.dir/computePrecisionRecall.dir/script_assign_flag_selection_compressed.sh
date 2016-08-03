@@ -4,7 +4,7 @@ NARGS=3
 
 if [ $# -ne $NARGS ]
 then
-    echo -e "\n\t\e[1mUsage $(basename $0):<TrainFile.gz><TestFile.gz><OutputFile.gz>\e[0m\n"
+    echo -e "\n\t\e[1mUsage $(basename $0):<TrainFile.gz><TestFile.tgz><OutputFile.tgz>\e[0m\n"
     exit 1
 fi
 

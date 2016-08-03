@@ -20,11 +20,17 @@ then
     fi
 fi
 
-echo "period,threshold,precision,overlap,harmonicmean" > $fileout
+echo "period,threshold,precision,recall,harmonicmean" > $fileout
 
-for l in $dirInput/*.csv
+for l in $dirInput/*.tgz
 do
-    period=$(basename $l | egrep -o "[0-9]{10}")
-    bestl=$(cat $l |  cut -d , -f1,6- | awk -F , 'BEGIN{OFS=","}{if(($2+$3) != 0){print $1,$2,$3,2*($3*$2)/($3+$2)}}' | sort -rg -t , -k3,3 | head -1)
+    period=$(basename $l | egrep -o "[0-9]{10}[_\-]{1}[0-9]{10}")
+    #File threshold,TP,FP,TN,FN,Precision,Recall
+    bestl=$(zcat $l |  cut -d , -f1,6- | awk -F , 'BEGIN{OFS=","}{if(($2+$3) != 0){print $1,$2,$3,2*($3*$2)/($3+$2)}}' | sort -rg -t , -k4,4 | head -1)
     echo "$period,$bestl" >> $fileout
 done
+
+ft=${fileout}.gz
+fo=$(echo $fileout | sed -re 's/\.[a-z]+$//1').tgz
+gzip $fileout
+mv $ft $fo

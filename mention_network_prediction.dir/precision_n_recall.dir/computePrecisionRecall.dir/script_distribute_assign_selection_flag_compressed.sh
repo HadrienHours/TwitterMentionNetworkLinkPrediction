@@ -66,7 +66,7 @@ do
 
     FILETRAIN=$DIRTRAIN/$(basename $fileTrain)
     FILETEST=$DIRTEST/$(basename $fileTest)
-    FILEOUT=$DIROUT/$(basename $fileTrain | sed -re 's/\.csv//1')_ASSIGNED_FLAG.gz
+    FILEOUT=$DIROUT/$(basename $fileTrain | sed -re 's/\.csv//1')_ASSIGNED_FLAG.tgz
 
     #Find available machine
     flag_f=0
