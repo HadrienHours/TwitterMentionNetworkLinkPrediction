@@ -11,4 +11,4 @@ fi
 filein=$1
 fileout=$2
 
-python extractHashtagInformation.py -i <(zcat $filein) | gzip > $fileout
+python extractHashtagInformation.py -i <(zcat $filein) | sort -g -t , -k1,1 | gzip > $fileout

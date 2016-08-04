@@ -1,10 +1,10 @@
 #!/bin/bash
 
-NARGS=2
+NARGS=3
 
 if [ $# -ne $NARGS ]
 then
-    echo -e "\n\t\e[1mUsage $(basename $0):<listDates><dirInputs>\e[0m"
+    echo -e "\n\t\e[1mUsage $(basename $0):<listDates><dirInputs><dirOut>\e[0m"
     exit 1
 fi
 
@@ -18,7 +18,7 @@ while read lineDate
 do
     date1=$(echo $lineDate | cut -d , -f1 | cut -d \. -f1)
     date2=$(echo $lineDate | cut -d , -f2 | cut -d \. -f1)
-    fileout=$dirin/HASH_INFO_PERIOD_${date1}-${date2}_SORTED_CHRONOLOGICALLY.tgz
+    fileout=$dirout/HASH_INFO_PERIOD_${date1}-${date2}_SORTED_CHRONOLOGICALLY.tgz
     for l in $dirin/*${date1}-${date2}.tgz
     do
         zcat $l
